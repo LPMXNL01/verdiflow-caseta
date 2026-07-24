@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Verdiflow — Caseta de Ingreso</title>
+  <style>
+    :root {
+      --yellow:      #FFE600;
+      --yellow-dark: #D4BF00;
+      --dark:        #1A1A1A;
+      --gray:        #6B7280;
+      --light-gray:  #F3F4F6;
+      --border:      #E5E7EB;
+      --green:       #16A34A;
+      --green-bg:    #DCFCE7;
+      --red:         #DC2626;
+      --red-bg:      #FEF2F2;
+      --white:       #FFFFFF;
+      --shadow:      0 2px 8px rgba(0,0,0,0.10);
+      --radius:      18px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ECEEF2;
+      min-height: 100vh;
+      color: var(--dark);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--dark);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      background: var(--yellow);
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 20px; color: var(--dark);
+      flex-shrink: 0; letter-spacing: -1px;
+    }
+    .header-info h1 { color: var(--white); font-size: 17px; font-weight: 800; }
+    .header-info p  { color: #9CA3AF; font-size: 12px; margin-top: 1px; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      background: var(--dark);
+      padding: 0 18px 14px;
+      display: flex;
+      gap: 5px;
+    }
+    .pd {
+      height: 4px; border-radius: 2px; flex: 1;
+      background: #374151;
+      transition: background 0.35s;
+    }
+    .pd.active { background: var(--yellow); }
+
+    /* ── STEPS ── */
+    .container {
+      padding: 20px 14px 110px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .step { display: none; }
+    .step.active {
+      display: block;
+      animation: fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STEP HEADER ── */
+    .step-header { margin-bottom: 22px; }
+    .step-badge {
+      display: inline-block;
+      background: var(--yellow);
+      color: var(--dark);
+      font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .06em;
+      padding: 4px 11px; border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .step-title {
+      font-size: 26px; font-weight: 900;
+      color: var(--dark); line-height: 1.2;
+    }
+    .step-subtitle {
+      font-size: 14px; color: var(--gray); margin-top: 6px;
+    }
+
+    /* ── TIMESTAMP ── */
+    .ts-badge {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px; color: var(--gray);
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--dark); margin-bottom: 14px;
+    }
+
+    /* ── CHOICE BUTTONS ── */
+    .choice-btn {
+      width: 100%;
+      padding: 18px 16px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: var(--white);
+      text-align: left;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 11px;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s, border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .choice-btn:last-child { margin-bottom: 0; }
+    .choice-btn:active { transform: scale(0.975); }
+    .choice-btn.yes-btn { border-color: var(--yellow); }
+    .choice-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+    }
+    .ci-yellow { background: #FFF9C4; }
+    .ci-gray   { background: var(--light-gray); }
+    .choice-text strong { display: block; font-size: 16px; font-weight: 700; color: var(--dark); }
+    .choice-text span   { font-size: 13px; color: var(--gray); }
+
+    /* ── CAMERA FIELD ── */
+    .cam-label {
+      font-size: 14px; font-weight: 700; color: var(--dark);
+      margin-bottom: 8px; display: block;
+    }
+    .req { color: var(--red); margin-left: 2px; }
+
+    .cam-trigger {
+      width: 100%;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      background: var(--light-gray);
+      padding: 28px 20px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative; overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cam-trigger:active { background: #E5E7EB; }
+    .cam-trigger.captured {
+      border-style: solid;
+      border-color: var(--green);
+      background: #F0FDF4;
+      padding: 10px;
+    }
+    .cam-trigger input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .cam-icon   { font-size: 38px; }
+    .cam-text   { font-size: 15px; font-weight: 700; color: var(--gray); }
+    .cam-sub    { font-size: 12px; color: #9CA3AF; }
+    .preview-img {
+      width: 100%; max-height: 220px;
+      object-fit: cover; border-radius: 10px;
+    }
+    .captured-badge {
+      position: absolute; top: 8px; right: 8px;
+      background: var(--green); color: white;
+      font-size: 11px; font-weight: 800;
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .retake-btn {
+      display: none;
+      margin-top: 8px;
+      font-size: 13px; color: var(--gray);
+      text-align: center; text-decoration: underline;
+      cursor: pointer; width: 100%;
+    }
+
+    /* ── TEXT INPUTS ── */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block; font-size: 14px; font-weight: 700;
+      color: var(--dark); margin-bottom: 6px;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 13px;
+      padding: 14px 15px;
+      font-size: 15px; color: var(--dark);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--yellow); }
+    .field textarea { resize: none; height: 82px; }
+
+    /* ── PRIMARY BUTTON ── */
+    .btn-primary {
+      width: 100%;
+      padding: 18px;
+      background: var(--yellow);
+      color: var(--dark);
+      font-size: 17px; font-weight: 900;
+      border: none; border-radius: var(--radius);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      margin-top: 6px;
+    }
+    .btn-primary:active { transform: scale(0.977); background: var(--yellow-dark); }
+
+    /* ── ERROR MSG ── */
+    .error-msg {
+      background: var(--red-bg);
+      border: 1px solid #FECACA;
+      border-radius: 12px;
+      padding: 12px 15px;
+      font-size: 13px; color: var(--red);
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── LOADING OVERLAY ── */
+    .loading-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.72);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 4px solid rgba(255,230,0,0.25);
+      border-top-color: var(--yellow);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: white; font-size: 16px; font-weight: 700; }
+
+    /* ── SUCCESS SCREEN ── */
+    #step-success { text-align: center; padding: 30px 10px; }
+    .success-circle {
+      width: 88px; height: 88px;
+      background: var(--green-bg);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      margin: 0 auto 20px;
+    }
+    .success-title { font-size: 26px; font-weight: 900; margin-bottom: 8px; }
+    .success-sub   { font-size: 15px; color: var(--gray); margin-bottom: 32px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOADING ══ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p class="loading-text">Guardando registro…</p>
+</div>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="logo">VF</div>
+  <div class="header-info">
+    <h1>Verdiflow</h1>
+    <p>Registro de ingreso en caseta</p>
+  </div>
+</div>
+
+<!-- ══ PROGRESS BAR ══ -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="pd active" id="pd1"></div>
+  <div class="pd"        id="pd2"></div>
+  <div class="pd"        id="pd3"></div>
+  <div class="pd"        id="pd4"></div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="container">
+
+  <!-- ─── PASO 1: ¿Empleado MELI? ─── -->
+  <div class="step active" id="step-1">
+    <div class="step-header">
+      <div class="step-badge">Paso 1 de 4</div>
+      <h2 class="step-title">¿Es empleado<br>de MELI?</h2>
+      <p class="step-subtitle">Selecciona una opción para continuar</p>
+    </div>
+
+    <div class="ts-badge">
+      <span>🕐</span>
+      <span id="tsDisplay">—</span>
+    </div>
+
+    <button class="choice-btn yes-btn" onclick="setTipo('empleado')">
+      <div class="choice-icon ci-yellow">🏢</div>
+      <div class="choice-text">
+        <strong>Sí, soy empleado MELI</strong>
+        <span>Tengo badge de empleado</span>
+      </div>
+    </button>
+
+    <button class="choice-btn" onclick="setTipo('visitante')">
+      <div class="choice-icon ci-gray">🙋</div>
+      <div class="choice-text">
+        <strong>No, soy visitante</strong>
+        <span>Proveedor, visita, contratista…</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- ─── PASO 2: Empleado → Badge ─── -->
+  <div class="step" id="step-2">
+    <div class="step-header">
+      <div class="step-badge">Paso 2 de 4 — Empleado</div>
+      <h2 class="step-title">Fotografía<br>de Badge</h2>
+      <p class="step-subtitle">Toma una foto clara de tu gafete de empleado</p>
+    </div>
+
+    <div class="card">
+      <label class="cam-label">Badge de empleado <span class="req">*</span></label>
+      <div class="cam-trigger" id="btn-badge">
+        <span class="cam-icon">📷</span>
+        <span class="cam-text">Tomar foto del badge</span>
+        <span class="cam-sub">Toca para abrir la cámara</span>
+        <input type="file" accept="image/*" capture="environment"
+               id="input-badge" onchange="capturePhoto(this,'badge')">
+      </div>
+      <span class="retake-btn" id="retake-badge" onclick="retakePhoto('badge')">↺ Volver a tomar</span>
+    </div>
+
+    <div class="card">
+      <p class="card-title">¿Trae vehículo?</p>
+      <button class="choice-btn yes-btn" onclick="goVehiculo('empleado', true)">
+        <div class="choice-icon ci-yellow">🚗</div>
+        <div class="choice-text">
+          <strong>Sí, traigo vehículo</strong>
+          <span>Se tomarán fotos del auto</span>
+        </div>
+      </button>
+      <button class="choice-btn" onclick="goVehiculo('empleado', false)">
+        <div class="choice-icon ci-gray">🚶</div>
+        <div class="choice-text">
+          <strong>No traigo vehículo</strong>
+          <span>Ingreso a pie</span>
+        </div>
+      </button>
+    </div>
+    <div class="error-msg" id="error-2">⚠️ Toma la foto del badge antes de continuar.</div>
+  </div>
+
+  <!-- ─── PASO 3: Visitante → ID + Datos ─── -->
+  <div class="step" id="step-3">
+    <div class="step-header">
+      <div class="step-badge">Paso 2 de 4 — Visitante</div>
+      <h2 class="step-title">Datos<br>del Visitante</h2>
+      <p class="step-subtitle">Completa la información y toma foto de tu ID</p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Empresa / Razón Social <span class="req">*</span></label>
+        <input type="text" id="input-empresa"
+               placeholder="Nombre de tu empresa o 'Particular'">
+      </div>
+      <div class="field">
+        <label>Motivo de visita <span class="req">*</span></label>
+        <textarea id="input-motivo"
+                  placeholder="Ej: Reunión con equipo de TI, entrega de pedido…"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="cam-label">Identificación Oficial <span class="req">*</span></label>
+      <div class="cam-trigger" id="btn-id">
+        <span class="cam-icon">🪪</span>
+        <span class="cam-text">Tomar foto del ID</span>
+        <span class="cam-sub">INE, pasaporte, licencia…</span>
+        <input type="file" accept="image/*" capture="environment"
+               id="input-id" onchange="capturePhoto(this,'id')">
+      </div>
+      <span class="retake-btn" id="retake-id" onclick="retakePhoto('id')">↺ Volver a tomar</span>
+    </div>
+
+    <div class="card">
+      <p class="card-title">¿Trae vehículo?</p>
+      <button class="choice-btn yes-btn" onclick="goVehiculo('visitante', true)">
+        <div class="choice-icon ci-yellow">🚗</div>
+        <div class="choice-text">
+          <strong>Sí, traigo vehículo</strong>
+          <span>Se tomarán fotos del auto</span>
+        </div>
+      </button>
+      <button class="choice-btn" onclick="goVehiculo('visitante', false)">
+        <div class="choice-icon ci-gray">🚶</div>
+        <div class="choice-text">
+          <strong>No traigo vehículo</strong>
+          <span>Ingreso a pie</span>
+        </div>
+      </button>
+    </div>
+    <div class="error-msg" id="error-3">⚠️ Completa empresa, motivo y toma la foto del ID.</div>
+  </div>
+
+  <!-- ─── PASO 4: Vehículo ─── -->
+  <div class="step" id="step-4">
+    <div class="step-header">
+      <div class="step-badge">Paso 3 de 4 — Vehículo</div>
+      <h2 class="step-title">Registro<br>de Vehículo</h2>
+      <p class="step-subtitle">Fotografía del auto y de las placas</p>
+    </div>
+
+    <div class="card">
+      <label class="cam-label">Fotografía del vehículo <span class="req">*</span></label>
+      <div class="cam-trigger" id="btn-vehiculo">
+        <span class="cam-icon">🚘</span>
+        <span class="cam-text">Tomar foto del vehículo</span>
+        <span class="cam-sub">Vista frontal o lateral</span>
+        <input type="file" accept="image/*" capture="environment"
+               id="input-vehiculo" onchange="capturePhoto(this,'vehiculo')">
+      </div>
+      <span class="retake-btn" id="retake-vehiculo" onclick="retakePhoto('vehiculo')">↺ Volver a tomar</span>
+    </div>
+
+    <div class="card">
+      <label class="cam-label">Fotografía de placas <span class="req">*</span></label>
+      <div class="cam-trigger" id="btn-placas">
+        <span class="cam-icon">🔢</span>
+        <span class="cam-text">Tomar foto de las placas</span>
+        <span class="cam-sub">Debe leerse el número claramente</span>
+        <input type="file" accept="image/*" capture="environment"
+               id="input-placas" onchange="capturePhoto(this,'placas')">
+      </div>
+      <span class="retake-btn" id="retake-placas" onclick="retakePhoto('placas')">↺ Volver a tomar</span>
+    </div>
+
+    <button class="btn-primary" onclick="submitForm()">
+      ✅ &nbsp;Registrar Ingreso
+    </button>
+    <div class="error-msg" id="error-4">⚠️ Toma las fotos del vehículo y las placas.</div>
+  </div>
+
+  <!-- ─── SUCCESS ─── -->
+  <div class="step" id="step-success">
+    <div class="success-circle">✅</div>
+    <h2 class="success-title">¡Registro exitoso!</h2>
+    <p class="success-sub">
+      El ingreso fue registrado correctamente.<br>
+      Ya puedes pasar.
+    </p>
+    <button class="btn-primary" onclick="resetForm()">
+      ＋ &nbsp;Nuevo registro
+    </button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ════════════════════════════════════════════════════
+//  CONFIG — Pega aquí la URL de tu Google Apps Script
+// ════════════════════════════════════════════════════
+// Pega aquí la Production URL del webhook de Verdiflows
+// Ejemplo: https://verdiflows.meli.com/webhook/verdiflow-caseta
+const WEBAPP_URL = 'http://verdi-flows.melisystems.com/webhook/verdiflow-caseta';
+
+// ════════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════════
+const state = {
+  tipo:         null,   // 'empleado' | 'visitante'
+  empresa:      '',
+  motivo:       '',
+  tieneVehiculo: false,
+  timestamp:    null,
+  photos: { badge: null, id: null, vehiculo: null, placas: null }
+};
+
+// Metadata de cada campo cámara (para resetear)
+const CAM_META = {
+  badge:    { icon:'📷', text:'Tomar foto del badge',       sub:'Toca para abrir la cámara' },
+  id:       { icon:'🪪', text:'Tomar foto del ID',          sub:'INE, pasaporte, licencia…' },
+  vehiculo: { icon:'🚘', text:'Tomar foto del vehículo',    sub:'Vista frontal o lateral' },
+  placas:   { icon:'🔢', text:'Tomar foto de las placas',   sub:'Debe leerse el número claramente' }
+};
+
+// ════════════════════════════════════════════════════
+//  TIMESTAMP en vivo
+// ════════════════════════════════════════════════════
+function refreshTimestamp() {
+  const now  = new Date();
+  const opts = {
+    weekday:'long', year:'numeric', month:'long', day:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit',
+    timeZone: 'America/Mexico_City'
+  };
+  document.getElementById('tsDisplay').textContent =
+    now.toLocaleString('es-MX', opts);
+}
+refreshTimestamp();
+setInterval(refreshTimestamp, 1000);
+
+// ════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ════════════════════════════════════════════════════
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  setProgress(id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setProgress(id) {
+  const map = { 'step-1':1, 'step-2':2, 'step-3':2, 'step-4':3, 'step-success':4 };
+  const n = map[id] || 1;
+  [1,2,3,4].forEach(i =>
+    document.getElementById('pd'+i).classList.toggle('active', i <= n)
+  );
+}
+
+// ════════════════════════════════════════════════════
+//  PASO 1
+// ════════════════════════════════════════════════════
+function setTipo(tipo) {
+  state.tipo      = tipo;
+  state.timestamp = new Date().toISOString();
+  showStep(tipo === 'empleado' ? 'step-2' : 'step-3');
+}
+
+// ════════════════════════════════════════════════════
+//  DECISIÓN VEHÍCULO (Paso 2 y 3)
+// ════════════════════════════════════════════════════
+function goVehiculo(seccion, tiene) {
+  // Validación
+  if (seccion === 'empleado') {
+    if (!state.photos.badge) { showError('error-2'); return; }
+  }
+  if (seccion === 'visitante') {
+    const empresa = document.getElementById('input-empresa').value.trim();
+    const motivo  = document.getElementById('input-motivo').value.trim();
+    if (!empresa || !motivo || !state.photos.id) { showError('error-3'); return; }
+    state.empresa = empresa;
+    state.motivo  = motivo;
+  }
+
+  state.tieneVehiculo = tiene;
+  if (tiene) {
+    showStep('step-4');
+  } else {
+    submitForm();
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  CÁMARA — captura y preview
+// ════════════════════════════════════════════════════
+async function capturePhoto(input, key) {
+  if (!input.files || !input.files[0]) return;
+  const compressed = await compressImage(input.files[0], 1200);
+  state.photos[key] = compressed;
+
+  const btn = document.getElementById('btn-' + key);
+  btn.innerHTML = `
+    <img src="${compressed}" class="preview-img" alt="Foto">
+    <span class="captured-badge">✓ Capturada</span>
+    <input type="file" accept="image/*" capture="environment"
+           id="input-${key}" onchange="capturePhoto(this,'${key}')">
+  `;
+  btn.classList.add('captured');
+  document.getElementById('retake-' + key).style.display = 'block';
+}
+
+function retakePhoto(key) {
+  state.photos[key] = null;
+  const m   = CAM_META[key];
+  const btn = document.getElementById('btn-' + key);
+  btn.innerHTML = `
+    <span class="cam-icon">${m.icon}</span>
+    <span class="cam-text">${m.text}</span>
+    <span class="cam-sub">${m.sub}</span>
+    <input type="file" accept="image/*" capture="environment"
+           id="input-${key}" onchange="capturePhoto(this,'${key}')">
+  `;
+  btn.classList.remove('captured');
+  document.getElementById('retake-' + key).style.display = 'none';
+}
+
+async function compressImage(file, maxW) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  SUBMIT
+// ════════════════════════════════════════════════════
+async function submitForm() {
+  // Validar paso 4 si hay vehículo
+  if (state.tieneVehiculo) {
+    if (!state.photos.vehiculo || !state.photos.placas) {
+      showError('error-4'); return;
+    }
+  }
+
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  const payload = {
+    timestamp:     state.timestamp,
+    tipo:          state.tipo === 'empleado' ? 'Empleado' : 'Visitante',
+    empresa:       state.empresa,
+    motivo:        state.motivo,
+    tieneVehiculo: state.tieneVehiculo ? 'Sí' : 'No',
+    fotoBadge:     state.photos.badge    || '',
+    fotoId:        state.photos.id       || '',
+    fotoVehiculo:  state.photos.vehiculo || '',
+    fotoPlacas:    state.photos.placas   || ''
+  };
+
+  try {
+    // Verdiflows Webhook — responde con CORS correcto
+    const res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      showStep('step-success');
+    } else {
+      throw new Error(`HTTP ${res.status}`);
+    }
+  } catch (err) {
+    alert('⚠️ Error al enviar el registro.\n\nVerifica tu conexión y que el workflow en Verdiflows esté activo.');
+    console.error(err);
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  RESET
+// ════════════════════════════════════════════════════
+function resetForm() {
+  state.tipo          = null;
+  state.empresa       = '';
+  state.motivo        = '';
+  state.tieneVehiculo = false;
+  state.timestamp     = null;
+  state.photos        = { badge: null, id: null, vehiculo: null, placas: null };
+
+  // Resetear cámaras
+  ['badge','id','vehiculo','placas'].forEach(k => {
+    const btn = document.getElementById('btn-' + k);
+    if (btn) retakePhoto(k);
+  });
+
+  // Resetear texto
+  const emp = document.getElementById('input-empresa');
+  const mot = document.getElementById('input-motivo');
+  if (emp) emp.value = '';
+  if (mot) mot.value = '';
+
+  showStep('step-1');
+}
+
+// ════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════
+function showError(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => { el.style.display = 'none'; }, 4500);
+}
+</script>
+</body>
+</html>
